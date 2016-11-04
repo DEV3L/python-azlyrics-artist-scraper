@@ -3,7 +3,7 @@ import urllib.request
 import requests as request
 from bs4 import BeautifulSoup
 
-from logging_wrapper import get_logger, log_message, log_exception
+from logging_wrapper import log_message, log_exception
 
 
 class ProxyRequester:
@@ -36,7 +36,6 @@ class ProxyScraper:
     def __init__(self, proxylist_url=PROXY_LIST_URL):
         self.proxies = []
         self.gather_proxies(proxylist_url)
-        self.logger = get_logger()
 
     def gather_proxies(self, proxylist_url):
         page = 0

@@ -9,16 +9,13 @@ from urllib.parse import urljoin
 
 import bs4
 
+from logging_wrapper import log_message, log_exception
+
 AZLYRICS_URL = 'http://www.azlyrics.com/t/taylorswift.html'
 CACHE_DIR = 'html/'
 
 
-class LyricsWalker:
-    """
-    Class for lyric gathering. Currently for AZ Lyrics, but can be adapted into
-    base case with varying scraping functions.
-    """
-
+class AZLyricsScrape:
     @classmethod
     def get_song_info(cls, url):
         """
@@ -42,8 +39,8 @@ class LyricsWalker:
             title = soup.title.text.split(' - ')[-1]
             lyrics = cls.get_lyrics(soup)
         except Exception as e:
-            print(('Error parsing: %s' % url))
-            print(e)
+            log_exception('Error parsing: %s' % url)
+            log_exception(e)
             return None
 
         album_str = album.replace(' ', '_').replace(':', '') if album else None
@@ -70,7 +67,7 @@ class LyricsWalker:
         json.dump(str(entry_info), f, sort_keys=1, indent=2)
         f.close()
 
-        print(('Parsed %s' % title))
+        log_message('Parsed %s' % title)
         return entry_info
 
     @classmethod
@@ -95,8 +92,8 @@ class LyricsWalker:
         urlobject = urllib.request.urlopen(url)
 
         # AZLyrics is eagerly blocks IPs
-        time.sleep(randint(15, 30))
-        print(('Read %s' % url))
+        time.sleep(randint(20, 30))
+        log_message('Read %s' % url)
         full_html = urlobject.read()
 
         if html:
@@ -119,7 +116,7 @@ class LyricsWalker:
         local_path = cls.url_to_filename(url)
         with open(local_path, 'wb') as f:
             f.write(content)
-            print(('Stored locally %s' % url))
+            log_message('Stored locally %s' % url)
 
     @classmethod
     def load_local(cls, url):
@@ -127,16 +124,11 @@ class LyricsWalker:
         if not exists(local_path):
             return None
         with open(local_path, 'rb') as f:
-            print(('Loaded locally: %s' % url))
+            log_message('Loaded locally: %s' % url)
             return f.read()
 
     @classmethod
-    def ascii_encoder(cls, data):
-        ascii_encode = lambda x: x.decode('ascii') if x is not None else None
-        return dict(list(map(ascii_encode, pair)) for pair in list(data.items()))
-
-    @classmethod
-    def walk_homepage(cls, home_url, *, output_dir=''):
+    def scrape_artist_page(cls, home_url, *, output_dir=''):
         soup = cls.get_soup_from_url(home_url)
         song_lst = soup.find(id='listAlbum').findAll(target='_blank')
 
@@ -148,11 +140,11 @@ class LyricsWalker:
                 had_previous = True
                 song_url = urljoin(home_url, song.get('href'))
                 song_info = cls.get_song_info(song_url)
-                print(song_info['lyrics'])
+                log_message(song_info['lyrics'])
                 json.dump(song_info, f)
             f.write(']')
-        print('Wrote all songs to json!')
+        log_message('Done writing files')
 
 
 if __name__ == '__main__':
-    LyricsWalker.walk_homepage(AZLYRICS_URL)
+    AZLyricsScrape.scrape_artist_page(AZLYRICS_URL)
