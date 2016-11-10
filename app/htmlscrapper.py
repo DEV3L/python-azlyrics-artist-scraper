@@ -3,7 +3,7 @@ import urllib.request
 import requests as request
 from bs4 import BeautifulSoup
 
-from logging_wrapper import log_message, log_exception
+from app.logging_wrapper import log_message, log_exception
 
 
 class ProxyRequester:
