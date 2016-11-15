@@ -64,9 +64,13 @@ class ScrapeSong:
                     in i.attrs.get('class')][0].strip()
         return_text = ''
 
+        is_title = True
         for line in [i for i in all_text.split('\n') if i.strip()][5:]:
             if line.startswith('if  ('):
                 break
+            if is_title:
+                is_title = False
+                continue
             return_text += line + '\n'
 
         return return_text.strip()
