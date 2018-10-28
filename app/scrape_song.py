@@ -30,6 +30,10 @@ class ScrapeSong:
             else:
                 album, year = None, None
             title = soup.title.text.split(' - ')[-1].replace(' | AZLyrics.com', '')
+            if 'Lovely' in title:
+                print()
+            if 'Fake You Out' in title:
+                print()
             lyrics = self.get_lyrics(soup)
         except Exception as e:
             log_exception(f'Error parsing: {self.url}')
@@ -63,18 +67,17 @@ class ScrapeSong:
 
     def get_lyrics(self, soup):
         all_div = soup.findAll('div')
-        all_text = [i.text for i in all_div
-                    if i.attrs.get('class') and 'main-page'
-                    in i.attrs.get('class')][0].strip()
-        return_text = ''
+        all_text = [div.text for div in all_div
+                    if div.attrs.get('class') and 'main-page' in div.attrs.get('class')][0].strip()
 
-        is_title = True
-        for line in [i for i in all_text.split('\n') if i.strip()][5:]:
-            if line.startswith('if  ('):
+        stripped_lines = [line.strip() for line in all_text.split('\n') if line.strip()]
+
+        lyrics = []
+
+        _lyrics = stripped_lines[3:]
+        for line in _lyrics:
+            if line.startswith('if  (') or line.startswith('if ('):
                 break
-            if is_title:
-                is_title = False
-                continue
-            return_text += f'{line}\n'
+            lyrics.append(line)
 
-        return return_text.strip()
+        return "\n".join(lyrics)
