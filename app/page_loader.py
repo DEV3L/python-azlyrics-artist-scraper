@@ -33,7 +33,7 @@ class PageLoader:
         if not exists(local_path):
             return file_bytes
         with open(local_path, 'rb') as file:
-            log_message('Loaded locally: %s' % self.url)
+            log_message(f'Loaded locally: {self.url}')
             file_bytes = file.read()
 
         return file_bytes
@@ -45,7 +45,7 @@ class PageLoader:
         local_path = self._url_to_filename()
         with open(local_path, 'wb') as file:
             file.write(content)
-            log_message('Stored locally %s' % self.url)
+            log_message(f'Stored locally {self.url}')
 
     def _url_to_filename(self):
         """
