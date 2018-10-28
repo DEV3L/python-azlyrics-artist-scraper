@@ -18,17 +18,21 @@ class ScrapeSong:
         soup = PageLoader(self.url).load_soup()
 
         try:
-            album_info = soup.find('div', {'class': 'album-panel'})
-            if album_info:
-                album_text = album_info.text.strip()
+            album_info = soup.find('div', {'class': 'songlist-panel'})
+            album_text = album_info.text.strip() if album_info else None
+
+            if album_text and '"' in album_text:
                 album = album_text.split('"')[1]
                 year = album_text.split('(')[1][:-1]
+
+                if year:
+                    year = year.split(')')[0]
             else:
                 album, year = None, None
-            title = soup.title.text.split(' - ')[-1]
+            title = soup.title.text.split(' - ')[-1].replace(' | AZLyrics.com', '')
             lyrics = self.get_lyrics(soup)
         except Exception as e:
-            log_exception('Error parsing: %s' % self.url)
+            log_exception(f'Error parsing: {self.url}')
             log_exception(e)
             return None
 
@@ -44,17 +48,17 @@ class ScrapeSong:
         }
 
         album_str = album_str if album_str else 'no_album'
-        output_file_dir = '%s%s/%s_%s/' % (self.data_dir, self.artist, year, album_str)
+        output_file_dir = f'{self.data_dir}{self.artist}/{year}_{album_str}/'
 
         if not isdir(output_file_dir):
             makedirs(output_file_dir)
 
-        output_filename = join(output_file_dir, '%s.json' % title_str)
+        output_filename = join(output_file_dir, f'{title_str}.json')
 
         with open(output_filename, 'w') as write_file:
             json.dump(entry_info, write_file)
 
-        log_message('Parsed %s' % title)
+        log_message(f'Parsed {title}')
         return entry_info
 
     def get_lyrics(self, soup):
@@ -71,6 +75,6 @@ class ScrapeSong:
             if is_title:
                 is_title = False
                 continue
-            return_text += line + '\n'
+            return_text += f'{line}\n'
 
         return return_text.strip()

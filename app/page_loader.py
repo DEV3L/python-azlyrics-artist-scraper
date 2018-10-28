@@ -60,7 +60,7 @@ class PageLoader:
         # AZLyrics is eagerly blocks IPs
         time.sleep(randint(20, 30))
 
-        log_message('Read %s' % self.url)
+        log_message(f'Read {self.url}')
         full_html = urlobject.read()
 
         return bs4.BeautifulSoup(full_html, 'html.parser'), full_html
